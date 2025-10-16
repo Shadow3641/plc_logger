@@ -1,40 +1,41 @@
-# config_template.py
 """
-Template configuration file for PLC Logger
+config_template.py
 
-- Use this file as a starting point for creating your local config.py
-- Replace placeholder values with actual PLC, email, and logging settings
+Template configuration for PLC Logger.
+Copy this file to config.py and fill in your own details.
+Sensitive values should remain ONLY in config.py (ignored by GitHub).
 """
 
-# --- PLC Configuration ---
-PLC_IP = "PLC_IP_ADDRESS_HERE"  # Example: "192.168.0.10"
-TAGS = ["Pressure_Transmitter", "Motor_Temperature", "Flow_Rate"]
+# --- PLC CONNECTION SETTINGS ---
+PLC_IP = "192.168.1.10"
+PLC_TAGS = ["Pressure_Transmitter", "Motor_Temperature", "Flow_Rate"]
 
-# --- Logging Configuration ---
-LOG_INTERVAL = 5  # seconds between reads
-LOG_PATH = "logs"
-CHART_PATH = "charts"
-HTML_PATH = "logs"
+# --- LOGGING SETTINGS ---
+LOG_INTERVAL = 5
+LOG_DIR = "logs"
+CHARTS_DIR = "charts"
 
-# --- Email Configuration ---
-EMAIL_METHOD = "OUTLOOK"  # Options: "SMTP" or "OUTLOOK"
-EMAIL_TO = ["recipient@example.com"]
-
-# SMTP example (optional)
-SMTP_SERVER = "SMTP_SERVER_HERE"
-SMTP_PORT = 587
-EMAIL_USER = "YOUR_EMAIL_HERE"
-EMAIL_PASSWORD = "YOUR_PASSWORD_HERE"
-
-# --- Range Alerts Configuration ---
-# Format: "Tag_Name": (Lower_Limit, Upper_Limit)
-# Use None if no limit for that side
+# --- ALERT SETTINGS ---
 RANGE_ALERTS = {
     "Pressure_Transmitter": (30, None),
     "Motor_Temperature": (None, 100),
     "Flow_Rate": (50, 200),
-    # Add more tags as needed
 }
 
-# --- Optional: Paths for templates or configs ---
-CONFIG_TEMPLATE_PATH = "config_template.py"
+# --- EMAIL SETTINGS ---
+# Available methods:
+#   "smtp"   → use email_smtp.py (default)
+#   "outlook" → use email_outlook.py for Outlook integration
+EMAIL_METHOD = "smtp"
+
+# --- SMTP CONFIGURATION (if using EMAIL_METHOD = "smtp") ---
+SMTP_SERVER = "smtp.office365.com"
+SMTP_PORT = 587
+SMTP_USERNAME = "youremail@domain.com"
+SMTP_PASSWORD = "yourpassword"
+EMAIL_RECIPIENTS = ["alerts@domain.com"]
+
+# --- OUTLOOK CONFIGURATION (if using EMAIL_METHOD = "outlook") ---
+OUTLOOK_SENDER = "youremail@domain.com"
+OUTLOOK_RECIPIENTS = ["alerts@domain.com"]
+OUTLOOK_SUBJECT_PREFIX = "[PLC ALERT]"

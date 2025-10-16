@@ -1,9 +1,14 @@
-﻿# Ignore logs folder contents
-logs/*
+﻿# Ignore build output
+build/
+dist/
+
+# Ignore logs and charts
+logs/
+charts/
 
 # Ignore Python cache files
 __pycache__/
 *.pyc
 
-# Local config with secrets
+# Ignore local config
 config.py

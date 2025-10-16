@@ -47,7 +47,8 @@ RANGE_ALERTS = {
     "Pressure_Transmitter": (30, None),
     "Motor_Temperature": (None, 100),
     "Flow_Rate": (50, 200),
-}```
+}
+```
 Lower or upper limits can be set to None if not applicable.
 
 Alerts are triggered when a tag value goes out of range.
@@ -55,7 +56,7 @@ Alerts are triggered when a tag value goes out of range.
 ## Running Locally (Python)
 
 1. Ensure Python 3.x is installed.
-2. Install dependencies (if any).
+2. Install dependencies: `pip install pylogix pandas matplotlib numpy jinja2 pywin32`
 3. Run: `python main.py`
 
 ## Building a Server-Ready Executable (.exe)
@@ -110,62 +111,47 @@ No Python installation is required. The .exe is fully plug-and-play.
 ## **Folder Structure**
 
 plc_logger/
+
 │
+
 ├─ main.py                  # Program entry point
+
 ├─ plc_comm.py              # PLC communication
+
 ├─ logger.py                # Logging to CSV
+
 ├─ alerts.py                # Range-based alerts & email
+
 ├─ charts.py                # Chart generation
+
 ├─ html_summary.py          # HTML summary reports
+
 ├─ email_outlook.py         # Outlook email support
+
 ├─ utils.py                 # Helper functions
+
 ├─ config.py                # Local config with credentials (ignored in GitHub)
+
 ├─ config_template.py       # Template config for reference
+
 ├─ logs/                    # Log CSV files (created automatically)
+
 ├─ charts/                  # Generated chart images (created automatically)
+
 ├─ hooks/                   # PyInstaller hooks for auto-including modules
+
 └─ build_server_exe.ps1     # PowerShell script to build standalone .exe
 
-## Workflow Diagram
 
-+-------------------+
-|     PLC Tags      |
-+--------+----------+
-         |
-         v
-+-------------------+
-|  plc_comm.py      |
-|  (Read Tags)      |
-+--------+----------+
-         |
-         v
-+-------------------+
-|  logger.py        |
-|  (Write CSV)      |
-+--------+----------+
-         |
-         v
-+-------------------+
-|  charts.py        |
-|  (Generate Charts)|
-+--------+----------+
-         |
-         v
-+-------------------+
-| html_summary.py   |
-| (HTML Reports)    |
-+--------+----------+
-         |
-         v
-+-------------------+
-| alerts.py         |
-| (Email Alerts)    |
-+-------------------+
-         |
-   +-----+-----+
-   |           |
-   v           v
-SMTP         Outlook
+## Workflow
+
+| Step | Module             | Action                            |
+|------|------------------|----------------------------------|
+| 1    | `plc_comm.py`     | Read PLC tags                     |
+| 2    | `logger.py`       | Write data to CSV                 |
+| 3    | `charts.py`       | Generate charts                   |
+| 4    | `html_summary.py` | Generate HTML reports             |
+| 5    | `alerts.py`       | Send email alerts (SMTP/Outlook) |
 
 ## **License**
 

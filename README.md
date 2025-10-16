@@ -16,7 +16,7 @@ This Python-based logger reads PLC tags, logs data, generates charts, creates HT
 - Log data to CSV files (`logs` folder)  
 - Generate charts (`charts` folder) and HTML summaries (`logs` folder)  
 - Range-based alerts for critical tags  
-- Email alerts via **SMTP** or **Outlook**  
+- **Email alerts via SMTP or Outlook** (configurable with `EMAIL_METHOD`)  
 - Modular, maintainable code structure:
   - `main.py` — program entry point  
   - `plc_comm.py` — PLC communication  
@@ -24,20 +24,48 @@ This Python-based logger reads PLC tags, logs data, generates charts, creates HT
   - `alerts.py` — email alerts and range checking  
   - `charts.py` — generate charts  
   - `html_summary.py` — generate HTML reports  
+  - `email_smtp.py` — SMTP-specific email logic  
   - `email_outlook.py` — Outlook-specific email logic  
   - `utils.py` — helper functions  
 
----
-
 ## Configuration
 
-1. Copy `config_template.py` to `config.py`.  
-2. Replace placeholder values with your **PLC IP, tag names, logging intervals, and email settings**.  
-3. Ensure sensitive information like passwords and IPs remain **in `config.py`**, which is ignored in GitHub.  
+1. Copy `config_template.py` to `config.py`.
+2. Replace placeholder values with your **PLC IP**, **tag names**, **logging intervals**, and **email settings**.
+3. Keep your credentials (IP addresses, passwords) secure — `config.py` is **ignored in GitHub** to protect sensitive data.
 
----
+### Email Configuration
 
-## Range Alerts
+You can choose between **SMTP** or **Outlook** for sending alerts.
+
+Set this option inside your `config.py`:
+
+```python
+# Choose email method: "SMTP" or "OUTLOOK"
+EMAIL_METHOD = "SMTP"
+```
+#### If using SMTP:
+
+Make sure your SMTP details are defined:
+```python
+SMTP_SERVER = "smtp.example.com"
+SMTP_PORT = 587
+EMAIL_SENDER = "your_email@example.com"
+EMAIL_PASSWORD = "your_secure_password"
+EMAIL_RECEIVER = ["recipient@example.com"]
+```
+
+#### If using Outlook:
+
+Ensure you have Outlook installed and logged in on the system where this program runs.
+The email_outlook.py module will automatically use your default Outlook profile to send alerts.
+
+Example:
+```python
+EMAIL_METHOD = "OUTLOOK"
+```
+
+### Range Alerts
 
 Set thresholds in `config.py`:
 

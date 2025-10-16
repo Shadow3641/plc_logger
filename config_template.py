@@ -1,31 +1,40 @@
-# -----------------------------
-# PLC Logger Configuration
-# -----------------------------
+# config_template.py
+"""
+Template configuration file for PLC Logger
 
-# PLC Connection
-PLC_IP = "192.168.1.10"               # Replace with your PLC IP
-TAGS_TO_READ = ["Motor_Status_UDT", "Drive_Parameters_UDT", "Line_Pressure"]  # Tags to monitor
-CRITICAL_TAGS = ["Motor_Status_UDT", "Drive_Parameters_UDT"]                    # Tags that trigger critical alerts
+- Use this file as a starting point for creating your local config.py
+- Replace placeholder values with actual PLC, email, and logging settings
+"""
 
-# Logging
-LOG_FILE = "logs/plc_udt_log.csv"     # CSV log file location
-LOG_INTERVAL = 5                      # Seconds between PLC reads
+# --- PLC Configuration ---
+PLC_IP = "PLC_IP_ADDRESS_HERE"  # Example: "192.168.0.10"
+TAGS = ["Pressure_Transmitter", "Motor_Temperature", "Flow_Rate"]
 
-# Alerts
-MAX_RETRIES = 3                        # Number of retries before a critical alert
-RECONNECT_DELAY = 10                   # Seconds to wait after communication error
-RANGE_ALERTS = {"Line_Pressure": (30, None)}  # Min/Max thresholds for range alerts
-ALERT_THROTTLE_MINUTES = 30            # Minimum minutes between repeated alerts
+# --- Logging Configuration ---
+LOG_INTERVAL = 5  # seconds between reads
+LOG_PATH = "logs"
+CHART_PATH = "charts"
+HTML_PATH = "logs"
 
-# Daily Summary
-DAILY_SUMMARY_HOUR = 18                # 24-hour format, hour to send summary email
+# --- Email Configuration ---
+EMAIL_METHOD = "OUTLOOK"  # Options: "SMTP" or "OUTLOOK"
+EMAIL_TO = ["recipient@example.com"]
 
-# Email Configuration
-SMTP_SERVER = "smtp.gmail.com"         # SMTP server
-SMTP_PORT = 587                        # SMTP port
-EMAIL_USER = "your_email@gmail.com"    # Your email
-EMAIL_PASSWORD = "your_email_password" # Your email password (replace with secure method)
-EMAIL_TO = ["recipient@example.com"]   # List of recipients
+# SMTP example (optional)
+SMTP_SERVER = "SMTP_SERVER_HERE"
+SMTP_PORT = 587
+EMAIL_USER = "YOUR_EMAIL_HERE"
+EMAIL_PASSWORD = "YOUR_PASSWORD_HERE"
 
-# Logs folder
-LOGS_FOLDER = "logs"
+# --- Range Alerts Configuration ---
+# Format: "Tag_Name": (Lower_Limit, Upper_Limit)
+# Use None if no limit for that side
+RANGE_ALERTS = {
+    "Pressure_Transmitter": (30, None),
+    "Motor_Temperature": (None, 100),
+    "Flow_Rate": (50, 200),
+    # Add more tags as needed
+}
+
+# --- Optional: Paths for templates or configs ---
+CONFIG_TEMPLATE_PATH = "config_template.py"

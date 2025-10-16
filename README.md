@@ -12,21 +12,11 @@
 
 1. Install Python 3.8+  
 
-2. Install required libraries:
-
-pip install pylogix pandas matplotlib
-
-markdown
-Copy code
+2. Install required libraries: `pip install pylogix pandas matplotlib`
 
 3. Configure PLC connection, tags, and email settings in `config.py`.  
 
-4. Run the logger:
-
-python main.py
-
-yaml
-Copy code
+4. Run the logger: `python main.py`
 
 - Logs and charts will appear in `logs/`  
 - Critical alerts and daily summaries are emailed automatically  
@@ -82,12 +72,7 @@ Copy code
 
 1. Install Python 3.8+  
 
-2. Install required libraries:
-
-pip install pylogix pandas matplotlib
-
-yaml
-Copy code
+2. Install required libraries: `pip install pylogix pandas matplotlib`
 
 3. Configure your PLC connection, tags, and email settings in `config.py`.  
 
@@ -95,12 +80,7 @@ Copy code
 
 ## **Usage**
 
-Run the main loop:
-
-python main.py
-
-yaml
-Copy code
+Run the main loop: `python main.py`
 
 - Data will be logged automatically at the interval defined in `config.py`.  
 - Critical tag failures or range alerts will trigger email notifications.  

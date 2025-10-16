@@ -12,3 +12,5 @@ __pycache__/
 
 # Ignore local config
 config.py
+
+plc_logger.spec

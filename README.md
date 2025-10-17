@@ -6,7 +6,7 @@
 
 **Modular PLC Logger for Logix/Allen-Bradley PLCs**  
 
-This Python-based logger reads PLC tags, logs data, generates charts, creates HTML summaries, and sends range-based alerts via **SMTP or Outlook**. The project is modular, allowing easy maintenance and future enhancements.
+This Python-based logger reads PLC tags, logs data, generates charts, creates PDF shift reports, and sends range-based alerts via **SMTP or Outlook**. The project is modular, allowing easy maintenance and future enhancements.
 
 ---
 
@@ -14,58 +14,32 @@ This Python-based logger reads PLC tags, logs data, generates charts, creates HT
 
 - Read PLC tags using Allen-Bradley / Logix protocols  
 - Log data to CSV files (`logs` folder)  
-- Generate charts (`charts` folder) and HTML summaries (`logs` folder)  
+- Generate charts (`charts` folder)  
 - Range-based alerts for critical tags  
-- **Email alerts via SMTP or Outlook** (configurable with `EMAIL_METHOD`)  
+- PDF end-of-shift reports (`reports` folder)  
+- Email alerts via **SMTP** or **Outlook**  
 - Modular, maintainable code structure:
   - `main.py` — program entry point  
   - `plc_comm.py` — PLC communication  
   - `logger.py` — logging data to CSV  
-  - `alerts.py` — email alerts and range checking  
+  - `alerts.py` — alert handling and email  
   - `charts.py` — generate charts  
-  - `html_summary.py` — generate HTML reports  
-  - `email_smtp.py` — SMTP-specific email logic  
+  - `report_pdf.py` — generate PDF shift reports  
   - `email_outlook.py` — Outlook-specific email logic  
+  - `email_smtp.py` — SMTP-specific email logic  
   - `utils.py` — helper functions  
+
+---
 
 ## Configuration
 
-1. Copy `config_template.py` to `config.py`.
-2. Replace placeholder values with your **PLC IP**, **tag names**, **logging intervals**, and **email settings**.
-3. Keep your credentials (IP addresses, passwords) secure — `config.py` is **ignored in GitHub** to protect sensitive data.
+1. Copy `config_template.py` to `config.py`.  
+2. Replace placeholder values with your **PLC IP, tag names, logging intervals, email settings, and shift times**.  
+3. Ensure sensitive information like passwords and IPs remain **in `config.py`**, which is ignored in GitHub.  
 
-### Email Configuration
+---
 
-You can choose between **SMTP** or **Outlook** for sending alerts.
-
-Set this option inside your `config.py`:
-
-```python
-# Choose email method: "SMTP" or "OUTLOOK"
-EMAIL_METHOD = "SMTP"
-```
-#### If using SMTP:
-
-Make sure your SMTP details are defined:
-```python
-SMTP_SERVER = "smtp.example.com"
-SMTP_PORT = 587
-EMAIL_SENDER = "your_email@example.com"
-EMAIL_PASSWORD = "your_secure_password"
-EMAIL_RECEIVER = ["recipient@example.com"]
-```
-
-#### If using Outlook:
-
-Ensure you have Outlook installed and logged in on the system where this program runs.
-The email_outlook.py module will automatically use your default Outlook profile to send alerts.
-
-Example:
-```python
-EMAIL_METHOD = "OUTLOOK"
-```
-
-### Range Alerts
+## Range Alerts
 
 Set thresholds in `config.py`:
 
@@ -77,122 +51,143 @@ RANGE_ALERTS = {
     "Flow_Rate": (50, 200),
 }
 ```
-Lower or upper limits can be set to None if not applicable.
+Lower or upper limits can be set to `None` if not applicable. Alerts are triggered when a tag value goes out of range.  
 
-Alerts are triggered when a tag value goes out of range.
+---
 
 ## Running Locally (Python)
 
-1. Ensure Python 3.x is installed.
-2. Install dependencies: `pip install pylogix pandas matplotlib numpy jinja2 pywin32`
-3. Run: `python main.py`
+1. Ensure Python 3.x is installed.  
+2. Install dependencies:
 
-## Building a Server-Ready Executable (.exe)
+```bash
+pip install pylogix pandas matplotlib numpy jinja2 fpdf pywin32
+```
+3. Run:
 
-If Python is not installed on the server, you can create a standalone `.exe` using PyInstaller.
+```bash
+python main.py
+```
+
+---
+
+## Server Deployment (.exe)
+
+If Python is not installed on the server:
 
 ### Step 1: Install PyInstaller
-`pip install pyinstaller`
+
+```bash
+pip install pyinstaller
+```
 
 ### Step 2: Prepare your project
 
-- Make sure all modules (main.py, plc_comm.py, alerts.py, etc.) are in the project folder.
-
-- Ensure config.py and config_template.py exist.
+- Ensure all modules (`main.py`, `plc_comm.py`, `alerts.py`, etc.) are in the project folder.  
+- Include `config.py` with credentials (ignored in GitHub).  
 
 ### Step 3: Use the build script
 
-We provide a ready-to-use PowerShell script build_server_exe.ps1:
+Run `build_server_exe.ps1`:
 
-`build_server_exe.ps1`
+```powershell
+# This script builds plc_logger.exe
+.\build_server_exe.ps1
+```
 
+- Cleans previous builds  
+- Includes all modules automatically  
+- Ensures `logs` and `charts` folders exist  
+- Generates `plc_logger.exe` in `dist`  
 
-- Cleans previous builds
+### Step 4: Deploy
 
-- Uses hooks to include all local modules automatically
+1. Copy `plc_logger.exe` to the server folder.  
+2. Copy your local `config.py`.  
+3. Run `plc_logger.exe`.  
 
-- Ensures logs and charts folders exist
+No Python installation is required. The .exe is fully plug-and-play.  
 
-- Generates `plc_logger.exe` in `dist`
+---
 
-### Step 4: Deploy on server
+## Alerts & Reports
 
-1. Copy plc_logger.exe to server folder.
+- If **email is enabled**, alerts are sent immediately with a configurable cooldown.  
+- If **email is disabled**, alerts are compiled into the end-of-shift PDF report.  
+- End-of-shift reports include charts, all alerts, and summary data for the shift.  
 
-2. Copy your local config.py with PLC credentials.
+---
 
-3. Run:
+## Folder Structure
 
-`plc_logger.exe`
+```markdown
+plc_logger/
+│
+├─ main.py                  # Program entry point
+├─ plc_comm.py              # PLC communication
+├─ logger.py                # Logging to CSV
+├─ alerts.py                # Alerts & email handling
+├─ charts.py                # Chart generation
+├─ report_pdf.py            # Shift-based PDF reports
+├─ email_smtp.py            # SMTP email support
+├─ email_outlook.py         # Outlook email support
+├─ utils.py                 # Helper functions
+├─ config.py                # Local config (ignored in GitHub)
+├─ config_template.py       # Template config for reference
+├─ logs/                    # Log CSV files
+├─ charts/                  # Generated chart images
+├─ reports/                 # Shift PDF reports
+├─ hooks/                   # PyInstaller hooks
+└─ build_server_exe.ps1     # PowerShell script to build standalone .exe
+```
 
+---
 
-No Python installation is required. The .exe is fully plug-and-play.
+## Workflow Overview 🚀
+
+The PLC Logger follows a structured, modular workflow. Each step is represented with badges for clarity.
+
+| Step | Module             | Action                                | Status |
+|------|------------------|--------------------------------------|--------|
+| 1    | `plc_comm.py`     | Read PLC tags                         | ![Step1](https://img.shields.io/badge/Step-1-blue) |
+| 2    | `logger.py`       | Write data to CSV                     | ![Step2](https://img.shields.io/badge/Step-2-green) |
+| 3    | `charts.py`       | Generate charts                       | ![Step3](https://img.shields.io/badge/Step-3-orange) |
+| 4    | `report_pdf.py`   | Generate end-of-shift PDF report      | ![Step4](https://img.shields.io/badge/Step-4-red) |
+| 5    | `alerts.py`       | Send email alerts (if enabled)       | ![Step5](https://img.shields.io/badge/Step-5-purple) |
+
+**Legend:**
+- ![Step1](https://img.shields.io/badge/Step-1-blue) — PLC communication  
+- ![Step2](https://img.shields.io/badge/Step-2-green) — Data logging  
+- ![Step3](https://img.shields.io/badge/Step-3-orange) — Charts generation  
+- ![Step4](https://img.shields.io/badge/Step-4-red) — PDF report creation  
+- ![Step5](https://img.shields.io/badge/Step-5-purple) — Alerts & notifications  
+
+> ⚡ Each step is modular, so you can extend or modify individual components without affecting others.
+
+---
 
 ## GitHub Safety Notes
 
-- Never commit config.py — it contains sensitive information.
+- Never commit `config.py` — contains credentials.  
+- Always commit `config_template.py` for reference.  
+- `logs/`, `charts/`, and `reports/` are ignored in GitHub.  
 
-- Always commit config_template.py to provide safe defaults for collaborators.
+---
 
-- Logs, charts, and templates are included in .exe builds automatically.
+## License
 
-## **Folder Structure**
+This project is licensed under **GNU GPL v3**. See [LICENSE](LICENSE) for details.  
 
-plc_logger/
+---
 
-│
+## Contributing
 
-├─ main.py                  # Program entry point
+- Add modules in a modular fashion.  
+- Follow existing commenting style.  
 
-├─ plc_comm.py              # PLC communication
+---
 
-├─ logger.py                # Logging to CSV
-
-├─ alerts.py                # Range-based alerts & email
-
-├─ charts.py                # Chart generation
-
-├─ html_summary.py          # HTML summary reports
-
-├─ email_outlook.py         # Outlook email support
-
-├─ utils.py                 # Helper functions
-
-├─ config.py                # Local config with credentials (ignored in GitHub)
-
-├─ config_template.py       # Template config for reference
-
-├─ logs/                    # Log CSV files (created automatically)
-
-├─ charts/                  # Generated chart images (created automatically)
-
-├─ hooks/                   # PyInstaller hooks for auto-including modules
-
-└─ build_server_exe.ps1     # PowerShell script to build standalone .exe
-
-
-## Workflow
-
-| Step | Module             | Action                            |
-|------|------------------|----------------------------------|
-| 1    | `plc_comm.py`     | Read PLC tags                     |
-| 2    | `logger.py`       | Write data to CSV                 |
-| 3    | `charts.py`       | Generate charts                   |
-| 4    | `html_summary.py` | Generate HTML reports             |
-| 5    | `alerts.py`       | Send email alerts (SMTP/Outlook) |
-
-## **License**
-
-This project is licensed under the **GNU General Public License v3 (GPL-3.0)**. See [LICENSE](LICENSE) for details.
-
-
-## **Contributing**
-
-- Add new modules for additional functionality in a modular fashion.  
-- Follow the existing commenting style for readability.  
-
-
-## **Contact**
+## Contact
 
 Developed by **Shadow3641**  
 For support, suggestions, or improvements, create an issue or pull request on GitHub.

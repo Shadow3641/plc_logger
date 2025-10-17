@@ -1,56 +1,36 @@
-# main.py
 """
-Main program for PLC Logger.
-
-- Reads tags from the PLC
-- Logs data to CSV
-- Generates charts and HTML summaries
-- Sends range-based alerts using the configured email method (SMTP or Outlook)
+Main entry point for plc_logger.
+Handles loop, logging, alerts, shift-based PDF reports, and chart generation.
 """
 
 import time
-import datetime
-from config import LOG_INTERVAL, TAGS
-from plc_comm import read_tags
-from logger import log_data
-from charts import generate_charts
-from html_summary import generate_html_summary
-from alerts import check_range_alerts  # updated alerts module
+import plc_comm
+import logger
+import alerts
+import charts
+import config
 
 def main():
     """
-    Main loop for PLC logger.
-    Continuously reads PLC data, logs it, generates charts/HTML, and sends alerts.
+    Main loop:
+    - Read PLC tags at configured interval
+    - Log data
+    - Check alerts
+    - Generate charts
+    - Generate end-of-shift report
     """
-    print("[INFO] Starting PLC Logger...")
     while True:
-        try:
-            # --- Step 1: Read PLC tags ---
-            tag_data = read_tags(TAGS)
-            timestamp = datetime.datetime.now()
-            print(f"[INFO] Tags read at {timestamp}: {tag_data}")
+        tag_values = plc_comm.read_tags()
+        logger.log_data(tag_values)
+        alerts.check_alerts(tag_values)
 
-            # --- Step 2: Log data to CSV ---
-            log_data(tag_data, timestamp)
+        # Shift report
+        alerts.shift_report_if_needed()
 
-            # --- Step 3: Generate charts ---
-            generate_charts()  # updates charts with latest data
+        # Generate charts for end-of-shift PDF
+        charts.generate_charts()
 
-            # --- Step 4: Generate HTML summary ---
-            generate_html_summary()  # updates HTML report
-
-            # --- Step 5: Check for range-based critical alerts ---
-            check_range_alerts(tag_data)  # sends emails if values out of range
-
-            # --- Step 6: Wait for next interval ---
-            time.sleep(LOG_INTERVAL)
-
-        except KeyboardInterrupt:
-            print("[INFO] Logger stopped by user.")
-            break
-        except Exception as e:
-            print(f"[ERROR] Exception in main loop: {e}")
-            time.sleep(LOG_INTERVAL)  # wait before retrying
+        time.sleep(config.PLC_LOG_INTERVAL)
 
 if __name__ == "__main__":
     main()

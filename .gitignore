@@ -1,16 +1,17 @@
-﻿# Ignore build output
-build/
-dist/
+# Ignore local configuration files
+config.py
 
-# Ignore logs and charts
+# Ignore logs, charts, reports, build, dist, and hooks folders
 logs/
 charts/
+reports/
+build/
+dist/
+hooks/
 
-# Ignore Python cache files
+# Python cache files
 __pycache__/
 *.pyc
 
-# Ignore local config
-config.py
-
-plc_logger.spec
+# Ignore PyInstaller spec files
+*.spec

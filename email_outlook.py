@@ -1,34 +1,17 @@
-# email_outlook.py
-# Sends emails using Outlook Desktop via COM Automation
-# Requires pywin32 (pip install pywin32)
+"""
+Handles sending email alerts using Microsoft Outlook.
+"""
 
 import win32com.client as win32
+import config
 
-def send_email(subject, body, recipients):
+def send_outlook_alert(tag, value):
     """
-    Sends an email using Outlook Desktop via COM Automation.
-
-    Parameters:
-        subject (str): Email subject line
-        body (str): Email body (plain text)
-        recipients (list of str): List of email addresses
+    Send an email via Outlook for a single alert.
     """
-    try:
-        # Initialize Outlook application
-        outlook = win32.Dispatch('Outlook.Application')
-        mail = outlook.CreateItem(0)  # 0 = olMailItem
-
-        # Set email subject and body
-        mail.Subject = subject
-        mail.Body = body  # for plain text emails
-        # mail.HTMLBody = body  # uncomment to send HTML emails
-
-        # Add recipients
-        for recipient in recipients:
-            mail.Recipients.Add(recipient)
-
-        # Send the email
-        mail.Send()
-        print(f"[INFO] Email sent via Outlook to: {', '.join(recipients)}")
-    except Exception as e:
-        print(f"[ERROR] Failed to send email via Outlook: {e}")
+    outlook = win32.Dispatch("Outlook.Application")
+    mail = outlook.CreateItem(0)
+    mail.To = ";".join(config.EMAIL_TO)
+    mail.Subject = f"PLC ALERT: {tag}"
+    mail.Body = f"Alert: {tag} value {value} out of range"
+    mail.Send()

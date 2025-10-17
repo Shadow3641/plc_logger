@@ -1,41 +1,65 @@
-# alerts.py
 """
-Alerts module for PLC logger.
-
-- Checks tags against defined ranges
-- Sends email notifications using configured method (Outlook or SMTP)
+Handles range-based alerts and PDF/email report triggers.
+Can send emails or generate PDF reports for shift-based workflow.
 """
 
-from config import RANGE_ALERTS, EMAIL_TO, EMAIL_METHOD
-from email_outlook import send_email as send_email_outlook
-# from email_smtp import send_email as send_email_smtp  # Optional SMTP support
+import os
+import time
+from datetime import datetime
+import config
+from report_pdf import generate_shift_report
 
-def check_range_alerts(tag_data):
+# Keep track of last alert per tag for cooldown
+last_alert_time = {}
+
+def check_alerts(tag_values):
     """
-    Check all critical tags against configured ranges.
-    Sends alerts if a value falls outside its defined range.
-    
-    Parameters:
-        tag_data (dict): Dictionary of {tag_name: value} from PLC read
+    Check each tag value against configured RANGE_ALERTS.
+    If EMAIL_ENABLED is True, send immediate alerts with cooldown.
+    Otherwise, just log alerts for end-of-shift PDF.
     """
-    for tag_name, (low, high) in RANGE_ALERTS.items():
-        value = tag_data.get(tag_name)
-        if value is None:
+    alerts_triggered = []
+
+    for tag, value in tag_values.items():
+        if tag not in config.RANGE_ALERTS or value is None:
             continue
-
-        alert_triggered = False
+        
+        low, high = config.RANGE_ALERTS[tag]
+        alert_needed = False
         if low is not None and value < low:
-            alert_triggered = True
+            alert_needed = True
         if high is not None and value > high:
-            alert_triggered = True
+            alert_needed = True
 
-        if alert_triggered:
-            subject = f"[ALERT] {tag_name} Out of Range"
-            body = f"Tag: {tag_name}\nCurrent Value: {value}\nAllowed Range: {low} - {high}"
+        if alert_needed:
+            now = time.time()
+            last_time = last_alert_time.get(tag, 0)
+            if config.EMAIL_ENABLED and now - last_time >= config.EMAIL_COOLDOWN:
+                # Send immediate email alert
+                send_email_alert(tag, value)
+                last_alert_time[tag] = now
+            
+            # Add alert to end-of-shift report
+            alerts_triggered.append((tag, value, datetime.now()))
+    
+    return alerts_triggered
 
-            if EMAIL_METHOD.upper() == "OUTLOOK":
-                send_email_outlook(subject, body, EMAIL_TO)
-            # elif EMAIL_METHOD.upper() == "SMTP":
-            #     send_email_smtp(subject, body, EMAIL_TO)
-            else:
-                print(f"[WARNING] Unknown email method '{EMAIL_METHOD}'. Email not sent.")
+def send_email_alert(tag, value):
+    """
+    Dispatch an email alert using the selected method.
+    """
+    if config.EMAIL_METHOD.upper() == "SMTP":
+        from email_smtp import send_smtp_alert
+        send_smtp_alert(tag, value)
+    elif config.EMAIL_METHOD.upper() == "OUTLOOK":
+        from email_outlook import send_outlook_alert
+        send_outlook_alert(tag, value)
+
+def shift_report_if_needed():
+    """
+    Check if current time is shift end and generate PDF report.
+    """
+    now = datetime.now()
+    current_time = now.strftime("%H:%M")
+    if current_time in config.SHIFT_START_TIMES:
+        generate_shift_report()

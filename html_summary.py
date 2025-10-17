@@ -1,72 +1,61 @@
-import pandas as pd
-from config import LOG_FILE, CRITICAL_TAGS, RANGE_ALERTS
-from charts import generate_udt_charts
+"""
+html_summary.py - Generate HTML summary reports
+-----------------------------------------------
+Creates a simple HTML summary table for PLC tag data.
+Accepts a DataFrame for shift-based reporting.
+"""
 
-def generate_daily_summary():
+import os
+from jinja2 import Template
+
+def generate_html_summary(df, html_dir="logs"):
     """
-    Generates a daily HTML summary of the latest PLC values with charts.
+    Generates an HTML summary for the provided DataFrame.
 
-    Features:
-        - Displays the most recent value for each tag
-        - Highlights CRITICAL_TAGS in red
-        - Highlights values out of RANGE_ALERTS in orange
-        - Generates charts for all tags and returns file paths
-        - Returns HTML string and list of chart files for email attachments
-
-    Returns:
-        html_body : str
-            HTML-formatted table of latest values
-        chart_files : list of str
-            List of PNG chart file paths
+    Args:
+        df (DataFrame): PLC tag data with timestamps
+        html_dir (str): Folder to save HTML summary
     """
-    # Generate charts first and get the file paths
-    chart_files = generate_udt_charts()
+    os.makedirs(html_dir, exist_ok=True)
 
-    # Read CSV log into pandas DataFrame
-    try:
-        df = pd.read_csv(LOG_FILE, parse_dates=['Timestamp'])
-    except FileNotFoundError:
-        return "<p>No log file found for summary.</p>", chart_files
+    # Simple Jinja2 HTML template
+    html_template = """
+    <html>
+    <head><title>Shift Summary Report</title></head>
+    <body>
+        <h2>Shift Summary Report: {{ start_time }} - {{ end_time }}</h2>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+                <th>Timestamp</th>
+                {% for tag in tags %}
+                <th>{{ tag }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in data %}
+            <tr>
+                <td>{{ row.timestamp }}</td>
+                {% for tag in tags %}
+                <td>{{ row[tag] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+    </html>
+    """
 
-    if df.empty:
-        return "<p>Log file is empty.</p>", chart_files
+    template = Template(html_template)
 
-    # Use the last row as the latest values
-    last_row = df.iloc[-1]
+    # Prepare data for template
+    data_rows = df.to_dict(orient="records")
+    html_content = template.render(
+        start_time=df["timestamp"].iloc[0],
+        end_time=df["timestamp"].iloc[-1],
+        tags=df.columns[1:],  # Skip timestamp
+        data=data_rows
+    )
 
-    # Start HTML table
-    html_body = "<html><body>"
-    html_body += "<h2>Daily PLC Summary</h2>"
-    html_body += "<table border='1' cellpadding='5' cellspacing='0'>"
-    html_body += "<tr><th>Tag</th><th>Value</th></tr>"
-
-    for tag in last_row.index:
-        if tag == "Timestamp":
-            continue
-
-        value = last_row[tag]
-
-        # Default color is black
-        color = "black"
-
-        # Highlight CRITICAL_TAGS in red
-        if tag in CRITICAL_TAGS:
-            color = "red"
-
-        # Highlight out-of-range values in orange
-        elif tag in RANGE_ALERTS:
-            min_val, max_val = RANGE_ALERTS[tag]
-            try:
-                num = float(value)
-                if (min_val is not None and num < min_val) or (max_val is not None and num > max_val):
-                    color = "orange"
-            except (ValueError, TypeError):
-                pass  # keep default color if value not numeric
-
-        html_body += f"<tr><td>{tag}</td><td style='color:{color}'>{value}</td></tr>"
-
-    html_body += "</table>"
-    html_body += "<p>Charts are attached separately.</p>"
-    html_body += "</body></html>"
-
-    return html_body, chart_files
+    # Save HTML file
+    filename = os.path.join(html_dir, f"shift_summary_{df['timestamp'].iloc[0].strftime('%Y%m%d_%H%M')}.html")
+    with open(filename, "w") as f:
+        f.write(html_content)
